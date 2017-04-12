@@ -39,6 +39,7 @@ Bart DJ
 
 ### $10+
 
+Matthew Becker<br>
 Greg Hatt<br>
 Timo Ernst<br>
 Dmitry Akinin<br>
@@ -55,6 +56,7 @@ Dave Billington
 
 ### $5+
 
+Daniel Wüst<br>
 Tirso Martínez Reyes<br>
 Zafer Ayan<br>
 Amir br<br>

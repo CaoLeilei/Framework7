@@ -44,7 +44,7 @@ app.openPanel = function (panelPosition, animated) {
         });
     }
     if (animated) {
-        panelTransitionEnd();    
+        panelTransitionEnd();
     }
     else {
         panel.trigger('opened panel:opened');
@@ -95,20 +95,18 @@ app.initPanelsBreakpoints = function () {
     var panelLeft = $('.panel-left');
     var panelRight = $('.panel-right');
     var views = app.root.children('.views');
-    var ww, wasVisible;
+    var wasVisible;
     function setPanels() {
-        ww = $(window).width();
-
         // Left Panel
         if (app.params.panelLeftBreakpoint && panelLeft.length > 0) {
             wasVisible = panelLeft.hasClass('panel-visible-by-breakpoint');
-            if (ww >= app.params.panelLeftBreakpoint) {
+            if (app.width >= app.params.panelLeftBreakpoint) {
                 if (!wasVisible) {
                     $('body').removeClass('with-panel-left-reveal with-panel-left-cover');
                     panelLeft.css('display', '').addClass('panel-visible-by-breakpoint').removeClass('active');
                     panelLeft.trigger('open panel:open opened panel:opened');
                     views.css({
-                        'margin-left': panelLeft.width() + 'px' 
+                        'margin-left': panelLeft.width() + 'px'
                     });
                     app.allowPanelOpen = true;
                 }
@@ -127,13 +125,13 @@ app.initPanelsBreakpoints = function () {
         // Right Panel
         if (app.params.panelRightBreakpoint && panelRight.length > 0) {
             wasVisible = panelRight.hasClass('panel-visible-by-breakpoint');
-            if (ww >= app.params.panelRightBreakpoint) {
+            if (app.width >= app.params.panelRightBreakpoint) {
                 if (!wasVisible) {
                     $('body').removeClass('with-panel-right-reveal with-panel-right-cover');
                     panelRight.css('display', '').addClass('panel-visible-by-breakpoint').removeClass('active');
                     panelRight.trigger('open panel:open opened panel:opened');
                     views.css({
-                        'margin-right': panelRight.width() + 'px' 
+                        'margin-right': panelRight.width() + 'px'
                     });
                     app.allowPanelOpen = true;
                 }
@@ -150,7 +148,7 @@ app.initPanelsBreakpoints = function () {
             }
         }
     }
-    $(window).on('resize', setPanels);
+    app.onResize(setPanels);
     setPanels();
 };
 /*======================================================
@@ -201,7 +199,7 @@ app.initSwipePanels = function () {
                 if (touchesStart.x > app.params.swipePanelActiveArea) return;
             }
             if (side === 'right') {
-                if (touchesStart.x < window.innerWidth - app.params.swipePanelActiveArea) return;
+                if (touchesStart.x < app.width - app.params.swipePanelActiveArea) return;
             }
         }
         isMoved = false;
@@ -243,7 +241,7 @@ app.initSwipePanels = function () {
                         isTouched = false;
                         return;
                     }
-                    if (side === 'right' && touchesStart.x < window.innerWidth - app.params.swipePanelActiveArea) {
+                    if (side === 'right' && touchesStart.x < app.width - app.params.swipePanelActiveArea) {
                         isTouched = false;
                         return;
                     }
@@ -310,14 +308,23 @@ app.initSwipePanels = function () {
         touchesDiff = pageX - touchesStart.x + threshold;
 
         if (side === 'right') {
-            translate = touchesDiff  - (opened ? panelWidth : 0);
-            if (translate > 0) translate = 0;
-            if (translate < -panelWidth) {
-                translate = -panelWidth;
+            if (effect === 'cover') {
+                translate = touchesDiff + (opened ? 0 : panelWidth);
+                if (translate < 0) translate = 0;
+                if (translate > panelWidth) {
+                    translate = panelWidth;
+                }
+            }
+            else {
+                translate = touchesDiff - (opened ? panelWidth : 0);
+                if (translate > 0) translate = 0;
+                if (translate < -panelWidth) {
+                    translate = -panelWidth;
+                }
             }
         }
         else {
-            translate = touchesDiff  + (opened ? panelWidth : 0);
+            translate = touchesDiff + (opened ? panelWidth : 0);
             if (translate < 0) translate = 0;
             if (translate > panelWidth) {
                 translate = panelWidth;
@@ -331,10 +338,11 @@ app.initSwipePanels = function () {
             app.pluginHook('swipePanelSetTransform', views[0], panel[0], Math.abs(translate / panelWidth));
         }
         else {
-            panel.transform('translate3d(' + (translate - panelWidth) + 'px,0,0)').transition(0);
+            if (side === 'left') translate = translate - panelWidth;
+            panel.transform('translate3d(' + (translate) + 'px,0,0)').transition(0);
 
             panelOverlay.transition(0);
-            overlayOpacity = Math.abs(translate/panelWidth);
+            overlayOpacity = 1 - Math.abs(translate/panelWidth);
             panelOverlay.css({opacity: overlayOpacity});
 
             panel.trigger('panel:swipe', {progress: Math.abs(translate / panelWidth)});
@@ -354,32 +362,64 @@ app.initSwipePanels = function () {
         var edge = (translate === 0 || Math.abs(translate) === panelWidth);
 
         if (!opened) {
-            if (translate === 0) {
-                action = 'reset';
-            }
-            else if (
-                timeDiff < 300 && Math.abs(translate) > 0 ||
-                timeDiff >= 300 && (Math.abs(translate) >= panelWidth / 2)
-            ) {
-                action = 'swap';
+            if (effect === 'cover') {
+                if (translate === 0) {
+                    action = 'swap'; //open
+                }
+                else if (timeDiff < 300 && Math.abs(translate) > 0) {
+                    action = 'swap'; //open
+                }
+                else if (timeDiff >= 300 && Math.abs(translate) < panelWidth / 2) {
+                    action = 'swap'; //open
+                }
+                else {
+                    action = 'reset'; //close
+                }
             }
             else {
-                action = 'reset';
+                if (translate === 0) {
+                    action = 'reset';
+                }
+                else if (
+                    timeDiff < 300 && Math.abs(translate) > 0 ||
+                    timeDiff >= 300 && (Math.abs(translate) >= panelWidth / 2)
+                ) {
+                    action = 'swap';
+                }
+                else {
+                    action = 'reset';
+                }
             }
         }
         else {
-            if (translate === -panelWidth) {
-                action = 'reset';
-            }
-            else if (
-                timeDiff < 300 && Math.abs(translate) >= 0 ||
-                timeDiff >= 300 && (Math.abs(translate) <= panelWidth / 2)
-            ) {
-                if (side === 'left' && translate === panelWidth) action = 'reset';
-                else action = 'swap';
+            if (effect === 'cover') {
+                if (translate === 0) {
+                    action = 'reset'; //open
+                }
+                else if (timeDiff < 300 && Math.abs(translate) > 0) {
+                    action = 'swap'; //open
+                }
+                else if (timeDiff >= 300 && Math.abs(translate) < panelWidth / 2) {
+                    action = 'reset'; //open
+                }
+                else {
+                    action = 'swap'; //close
+                }
             }
             else {
-                action = 'reset';
+                if (translate === -panelWidth) {
+                    action = 'reset';
+                }
+                else if (
+                    timeDiff < 300 && Math.abs(translate) >= 0 ||
+                    timeDiff >= 300 && (Math.abs(translate) <= panelWidth / 2)
+                ) {
+                    if (side === 'left' && translate === panelWidth) action = 'reset';
+                    else action = 'swap';
+                }
+                else {
+                    action = 'reset';
+                }
             }
         }
         if (action === 'swap') {
@@ -412,6 +452,7 @@ app.initSwipePanels = function () {
                     panel.trigger('close panel:close');
                     $('body').addClass('panel-closing');
                     target.transitionEnd(function () {
+                        if (panel.hasClass('active')) return;
                         panel.trigger('close panel:closed');
                         panel.css({display: ''});
                         $('body').removeClass('panel-closing');

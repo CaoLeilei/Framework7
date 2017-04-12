@@ -106,7 +106,7 @@ var Calendar = function (params) {
                     toPopover = app.device.ipad ? true : false;
                 }
                 else {
-                    if ($(window).width() >= 768) toPopover = true;
+                    if (app.width >= 768) toPopover = true;
                 }
             }
         }
@@ -185,7 +185,7 @@ var Calendar = function (params) {
             p.wrapper.find('.picker-calendar-day-selected').removeClass('picker-calendar-day-selected');
             var valueDate;
             if (p.params.rangePicker && p.value.length === 2) {
-                for (i = p.value[0]; i <= p.value[1]; i += 24*60*60*1000) {
+                for (i = new Date(p.value[0]).getTime(); i <= new Date(p.value[1]).getTime(); i += 24*60*60*1000) {
                     valueDate = new Date(i);
                     p.wrapper.find('.picker-calendar-day[data-date="' + valueDate.getFullYear() + '-' + valueDate.getMonth() + '-' + valueDate.getDate() + '"]').addClass('picker-calendar-day-selected');
                 }
@@ -332,7 +332,7 @@ var Calendar = function (params) {
                 p.params.onDayClick(p, day[0], dateYear, dateMonth, dateDay);
             }
             if (!day.hasClass('picker-calendar-day-selected') || p.params.multiple || p.params.rangePicker) {
-                p.addValue(new Date(dateYear, dateMonth, dateDay).getTime());
+                p.addValue(new Date(dateYear, dateMonth, dateDay, 0, 0, 0));
             }
             if (p.params.closeOnSelect) {
                 if (p.params.rangePicker && p.value.length === 2 || !p.params.rangePicker) p.close();
@@ -376,7 +376,7 @@ var Calendar = function (params) {
         var match = false;
         var i;
         if (!range) return false;
-        if ($.isArray(range)) {
+        if (Array.isArray(range)) {
             for (i = 0; i < range.length; i ++) {
                 if (range[i].from || range[i].to) {
                     if (range[i].from && range[i].to) {

@@ -7,7 +7,7 @@ window.Framework7 = function (params) {
     var app = this;
 
     // Version
-    app.version = '1.5.3';
+    app.version = '1.6.0';
 
     // Default Parameters
     app.params = {
@@ -98,6 +98,7 @@ window.Framework7 = function (params) {
         modalCloseByOutside: false,
         actionsCloseByOutside: true,
         popupCloseByOutside: true,
+        popoverCloseByOutside: true,
         modalPreloaderTitle: 'Loading... ',
         modalStack: true,
         modalsMoveToRoot: true,
@@ -134,7 +135,7 @@ window.Framework7 = function (params) {
                 '</span>' +
             '</span>',
         materialRipple: true,
-        materialRippleElements: '.ripple, a.link, a.item-link, .button, .modal-button, .tab-link, .label-radio, .label-checkbox, .actions-modal-button, a.searchbar-clear, a.floating-button, .floating-button > a, .speed-dial-buttons a',
+        materialRippleElements: '.ripple, a.link, a.item-link, .button, .modal-button, .tab-link, .label-radio, .label-checkbox, .actions-modal-button, a.searchbar-clear, a.floating-button, .floating-button > a, .speed-dial-buttons a, .form-checkbox, .form-radio, .data-table .sortable-cell',
         // Auto init
         init: true,
     };
