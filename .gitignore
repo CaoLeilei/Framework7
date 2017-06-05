@@ -5,3 +5,5 @@ custom
 npm-debug.log
 .idea
 .vscode
+nbproject
+dist/css/framework7.css
